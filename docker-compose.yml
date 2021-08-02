@@ -1,0 +1,42 @@
+version: '3.7'
+
+volumes:
+    elastic_data:
+        driver: local
+
+networks:
+    elastic:
+        driver: bridge
+
+services:
+    elasticsearch:
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.10.0
+        container_name: elasticsearch
+        environment:
+            - discovery.type=single-node
+        volumes:
+            - elastic_data:/user/share/elasticsearch/data
+        ports:
+            - 9200:9200
+        networks:
+            - elastic
+    kibana:
+        image: docker.elastic.co/kibana/kibana:7.10.0
+        container_name: kibana
+        ports:
+            - 5601:5601
+        networks:
+            - elastic
+    eventos-api:
+        image: eventos-api:1.0
+        build: 
+            context: .
+            dockerfile: Dockerfile-windows
+        container_name: eventos-api
+        environment: 
+            - ELASTIC_HOST=elasticsearch
+            - ELASTIC_PORT=9200
+        ports: 
+            - 8080:80
+        networks:
+            - elastic
